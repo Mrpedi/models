@@ -18,7 +18,6 @@ class YOLOv2DarkNetFeatureExtractor(yolov2_meta_arch.YOLOv2FeatureExtractor):
     def __init__(self, is_training,
                  reuse_weights=None):
         """
-
         :param depth_multiplier:
         :param min_depth:
         :param conv_hyperarams:
