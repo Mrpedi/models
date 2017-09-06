@@ -17,7 +17,7 @@ class DarkNetTest(tf.test.TestCase):
 
     inputs = tf.random_uniform((batch_size, height, width, channels))
     logits, end_points = darknet.darknet_19(inputs, num_classes)
-    self.assertTrue(logits.op.name.startswith('darknet_19/logits'))
+    self.assertTrue(logits.op.name.startswith('DarkNet_19/Logits'))
     self.assertListEqual(logits.get_shape().as_list(),
                          [batch_size, num_classes])
 
@@ -27,7 +27,7 @@ class DarkNetTest(tf.test.TestCase):
 
     inputs = tf.random_uniform((batch_size, height, width, channels))
     net, end_points = darknet.darknet_19_base(inputs)
-    self.assertTrue(net.op.name.startswith('darknet_19/conv2d_18'))
+    self.assertTrue(net.op.name.startswith('DarkNet_19/Conv2d_18'))
 
   def testHalfSizeImages(self):
     batch_size = 5
@@ -36,7 +36,7 @@ class DarkNetTest(tf.test.TestCase):
 
     inputs = tf.random_uniform((batch_size, height, width, channels))
     logits, end_points = darknet.darknet_19(inputs, num_classes)
-    self.assertTrue(logits.op.name.startswith('darknet_19/logits'))
+    self.assertTrue(logits.op.name.startswith('DarkNet_19/Logits'))
     self.assertListEqual(logits.get_shape().as_list(),
                          [batch_size, num_classes])
 
@@ -56,7 +56,7 @@ class DarkNetTest(tf.test.TestCase):
 
       predictions = sess.run(logits, feed_dict=feed_dict)
 
-      self.assertTrue(logits.op.name.startswith('darknet_19/logits'))
+      self.assertTrue(logits.op.name.startswith('DarkNet_19/Logits'))
       self.assertEquals(predictions.shape, (batch_size, num_classes))
 
   def testUnknownBatchSize(self):
@@ -67,7 +67,7 @@ class DarkNetTest(tf.test.TestCase):
 
     inputs = tf.placeholder(dtype=tf.float32, shape=(None, height, width, channels))
     logits, end_points = darknet.darknet_19(inputs, num_classes)
-    self.assertTrue(logits.op.name.startswith('darknet_19/logits'))
+    self.assertTrue(logits.op.name.startswith('DarkNet_19/Logits'))
     self.assertListEqual(logits.get_shape().as_list(),
                          [None, num_classes])
     images = tf.random_uniform((batch_size, height, width, channels))
@@ -82,12 +82,12 @@ class DarkNetTest(tf.test.TestCase):
     height, width, channels = 608, 608, 3
     num_classes = 1000
 
-    eval_inputs = tf.random_uniform((batch_size, height, width, channels))
-    logits, end_points = darknet.darknet_19(eval_inputs, num_classes, is_training=False)
-
-    predictions = tf.argmax(logits, 1)
-
     with self.test_session() as sess:
+      eval_inputs = tf.random_uniform((batch_size, height, width, channels))
+      logits, end_points = darknet.darknet_19(eval_inputs, num_classes, is_training=False)
+
+      predictions = tf.argmax(logits, 1)
+
       sess.run(tf.global_variables_initializer())
       outputs = sess.run(predictions)
       self.assertEqual(outputs.shape, (batch_size,))
@@ -103,8 +103,7 @@ class DarkNetTest(tf.test.TestCase):
 
     output, end_points = darknet.darknet_19(train_inputs, num_classes)
     logits, end_points = darknet.darknet_19(eval_inputs, num_classes, reuse=True)
-    for i in end_points:
-      print(i)
+
     predictions = tf.argmax(logits, 1)
 
     with self.test_session() as sess:

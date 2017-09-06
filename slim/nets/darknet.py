@@ -13,6 +13,9 @@ import tensorflow.contrib.slim as slim
 
 
 def leaky_relu(x, alpha=0.01):
+  """
+  Leaky Rectified Linear Unit (Leaky-ReLU) activation Function
+  """
   return tf.maximum(alpha * x, x)
 
 
@@ -51,42 +54,44 @@ def darknet_19_base(inputs, reuse=None, scope=None):
   """
 
   end_points = {}
-  with tf.variable_scope(scope, 'darknet_19', [inputs], reuse=reuse) as sc:
+  with tf.variable_scope(scope, 'DarkNet_19', [inputs], reuse=reuse) as sc:
     end_points_collection = sc.name
-    with slim.arg_scope([slim.conv2d, slim.max_pool2d],  outputs_collections=end_points_collection):
-      net = slim.conv2d(inputs, 32, [3, 3], scope='conv2d_1')
-      net = slim.max_pool2d(net, [2, 2], scope='max_pool_1')
-      net = slim.conv2d(net, 64, [3, 3], scope='conv2d_2')
-      net = slim.max_pool2d(net, [2, 2], scope='max_pool_2')
+    with slim.arg_scope([slim.conv2d, slim.max_pool2d, slim.batch_norm],
+                        outputs_collections=end_points_collection):
+      net = slim.conv2d(inputs, 32, [3, 3], scope='Conv2d_1', normalizer_fn=slim.batch_norm)
+      net = slim.max_pool2d(net, [2, 2], scope='MaxPool1')
 
-      net = slim.conv2d(net, 128, [3, 3], scope='conv2d_3')
-      net = slim.conv2d(net, 64,  [1, 1], scope='conv2d_4')
-      net = slim.conv2d(net, 128, [3, 3], scope='conv2d_5')
-      net = slim.max_pool2d(net,  [2, 2], scope='max_pool_3')
+      net = slim.conv2d(net, 64, [3, 3], scope='Conv2d_2', normalizer_fn=slim.batch_norm)
+      net = slim.max_pool2d(net, [2, 2], scope='MaxPool2')
 
-      net = slim.conv2d(net, 256, [3, 3], scope='conv2d_6')
-      net = slim.conv2d(net, 128, [1, 1], scope='conv2d_7')
-      net = slim.conv2d(net, 256, [3, 3], scope='conv2d_8')
-      net = slim.max_pool2d(net,  [2, 2], scope='max_pool_4')
+      net = slim.conv2d(net, 128, [3, 3], scope='Conv2d_3', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 64,  [1, 1], scope='Conv2d_4', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 128, [3, 3], scope='Conv2d_5', normalizer_fn=slim.batch_norm)
+      net = slim.max_pool2d(net,  [2, 2], scope='MaxPool3')
 
-      net = slim.conv2d(net, 512, [3, 3], scope='conv2d_9')
-      net = slim.conv2d(net, 256, [1, 1], scope='conv2d_10')
-      net = slim.conv2d(net, 512, [3, 3], scope='conv2d_11')
-      net = slim.conv2d(net, 256, [1, 1], scope='conv2d_12')
-      net = slim.conv2d(net, 512, [3, 3], scope='conv2d_13')
-      net = slim.max_pool2d(net,  [2, 2], scope='max_pool_4')
+      net = slim.conv2d(net, 256, [3, 3], scope='Conv2d_6', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 128, [1, 1], scope='Conv2d_7', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 256, [3, 3], scope='Conv2d_8', normalizer_fn=slim.batch_norm)
+      net = slim.max_pool2d(net,  [2, 2], scope='MaxPool4')
 
-      net = slim.conv2d(net, 1024, [3, 3], scope='conv2d_14')
-      net = slim.conv2d(net, 512,  [1, 1], scope='conv2d_15')
-      net = slim.conv2d(net, 1024, [3, 3], scope='conv2d_16')
-      net = slim.conv2d(net, 512,  [1, 1], scope='conv2d_17')
-      net = slim.conv2d(net, 1024, [3, 3], scope='conv2d_18')
+      net = slim.conv2d(net, 512, [3, 3], scope='Conv2d_9', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 256, [1, 1], scope='Conv2d_10', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 512, [3, 3], scope='Conv2d_11', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 256, [1, 1], scope='Conv2d_12', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 512, [3, 3], scope='Conv2d_13', normalizer_fn=slim.batch_norm)
+      net = slim.max_pool2d(net,  [2, 2], scope='MaxPool4')
+
+      net = slim.conv2d(net, 1024, [3, 3], scope='Conv2d_14', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 512,  [1, 1], scope='Conv2d_15', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 1024, [3, 3], scope='Conv2d_16', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 512,  [1, 1], scope='Conv2d_17', normalizer_fn=slim.batch_norm)
+      net = slim.conv2d(net, 1024, [3, 3], scope='Conv2d_18')
 
       end_points = slim.utils.convert_collection_to_dict(end_points_collection)
       return net, end_points
 
 
-def darknet_19(inputs, num_classes=1000, is_training=True, reuse=None, scope='darknet_19'):
+def darknet_19(inputs, num_classes=1000, is_training=True, reuse=None, scope='DarkNet_19'):
   """
   Darknet-19 Architecture
 
@@ -100,16 +105,15 @@ def darknet_19(inputs, num_classes=1000, is_training=True, reuse=None, scope='da
   Return:
 
   """
-  with tf.variable_scope(scope, 'darknet_19', [inputs, num_classes], reuse=reuse) as scope:
+  with tf.variable_scope(scope, 'DarkNet_19', [inputs, num_classes], reuse=reuse) as scope:
     with slim.arg_scope([slim.batch_norm], is_training=is_training):
-      net, end_points = darknet_19_base(inputs)
-
-      with tf.variable_scope('logits'):
+      net, end_points = darknet_19_base(inputs, scope=scope)
+      with tf.variable_scope('Logits'):
         net = slim.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None)
         with tf.variable_scope('global_avg_pool'):
           net    = slim.avg_pool2d(net, [1, 1])
           logits = tf.reduce_mean(net, [1, 2])
-        end_points['logits'] = logits
-        end_points['predictions'] = slim.softmax(logits)
+        end_points['Logits'] = logits
+        end_points['Predictions'] = slim.softmax(logits)
       return logits, end_points
 
