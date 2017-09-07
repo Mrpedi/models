@@ -117,3 +117,4 @@ def darknet_19(inputs, num_classes=1000, is_training=True, reuse=None, scope='Da
         end_points['Predictions'] = slim.softmax(logits)
       return logits, end_points
 
+darknet_19.default_image_size = 256
