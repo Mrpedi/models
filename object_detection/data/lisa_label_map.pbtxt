@@ -1,0 +1,124 @@
+item{
+  id: 1
+  name:'doNotEnter'
+}
+item{
+  id: 2
+  name:'curveRight'
+}
+item{
+  id: 3
+  name:'speedLimit35'
+}
+item{
+  id: 4
+  name:'pedestrianCrossing'
+}
+item{
+  id: 5
+  name:'stop'
+}
+item{
+  id: 6
+  name:'stopAhead'
+}
+item{
+  id: 7
+  name:'signalAhead'
+}
+item{
+  id: 8
+  name:'intersectionLaneControl'
+}
+item{
+  id: 9
+  name:'bicyclesMayUseFullLane'
+}
+item{
+  id: 10
+  name:'speedLimit25'
+}
+item{
+  id: 11
+  name:'yieldToPedestrian'
+}
+item{
+  id: 12
+  name:'noParking'
+}
+item{
+  id: 13
+  name:'speedLimit15'
+}
+item{
+  id: 14
+  name:'speedBumpsAhead'
+}
+item{
+  id: 15
+  name:'speedLimit30'
+}
+item{
+  id: 16
+  name:'curveLeft'
+}
+item{
+  id: 17
+  name:'noLeftAndUTurn'
+}
+item{
+  id: 18
+  name:'noUTurn'
+}
+item{
+  id: 19
+  name:'keepRight'
+}
+item{
+  id: 20
+  name:'leftAndUTurnControl'
+}
+item{
+  id: 21
+  name:'merge'
+}
+item{
+  id: 22
+  name:'speedLimit40'
+}
+item{
+  id: 23
+  name:'speedLimit45'
+}
+item{
+  id: 24
+  name:'addedLane'
+}
+item{
+  id: 25
+  name:'speedLimit50'
+}
+item{
+  id: 26
+  name:'school'
+}
+item{
+  id: 27
+  name:'intersection'
+}
+item{
+  id: 28
+  name:'laneEnds'
+}
+item{
+  id: 29
+  name:'noRightTurn'
+}
+item{
+  id: 30
+  name:'yieldAhead'
+}
+item{
+  id: 31
+  name:'speedLimit60'
+}
