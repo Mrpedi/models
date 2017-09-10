@@ -90,8 +90,36 @@ def parse_lisa_annotations_to_dict(data_dir):
     return training_instances
 
 
+class ImageCoder(object):
+  """Helper class that provides TensorFlow image coding utilities."""
+
+  def __init__(self, sess):
+    # Create a single Session to run all image coding calls.
+    self._sess = sess
+
+    # Initializes function that converts PNG to JPEG data.
+    self._png_data = tf.placeholder(dtype=tf.string)
+    image = tf.image.decode_png(self._png_data, channels=3)
+    self._png_to_jpeg = tf.image.encode_jpeg(image, format='rgb', quality=100)
+
+    # Initializes function that decodes RGB JPEG data.
+    self._decode_jpeg_data = tf.placeholder(dtype=tf.string)
+    self._decode_jpeg = tf.image.decode_jpeg(self._decode_jpeg_data, channels=3)
+
+  def png_to_jpeg(self, image_data):
+    return self._sess.run(self._png_to_jpeg,
+                          feed_dict={self._png_data: image_data})
+
+  def decode_jpeg(self, image_data):
+    image = self._sess.run(self._decode_jpeg,
+                           feed_dict={self._decode_jpeg_data: image_data})
+    assert len(image.shape) == 3
+    assert image.shape[2] == 3
+    return image
+
+
 def dict_to_tf_example(data,
-                       label_map_dict,
+                       label_map_dict, image_coder,
                        ignore_difficult_instances=False):
     """Convert XML derived dict to tf.Example proto.
     Notice that this function normalizes the bounding box coordinates provided
@@ -102,6 +130,9 @@ def dict_to_tf_example(data,
       label_map_dict: A map from string label names to integers ids.
       ignore_difficult_instances: Whether to skip difficult instances in the
         dataset  (default: False).
+
+      image_coder: ImageCoder Object - Utility to convert PNG image to JPEG
+
     Returns:
       example: The converted tf.Example.
     Raises:
@@ -109,15 +140,14 @@ def dict_to_tf_example(data,
     """
     img_path = os.path.join(FLAGS.data_dir, data['filename'])
     with tf.gfile.GFile(img_path, 'rb') as fid:
-        encoded_jpg = fid.read()
+        encoded_png = fid.read()
+        encoded_jpg = image_coder.png_to_jpeg(encoded_png)
 
-    # encoded_jpg_io = io.BytesIO(encoded_jpg)
-    # image = PIL.Image.open(encoded_jpg_io)
-    #
-    # if image.format != 'JPEG':
-    #     if image.format == 'PNG':
-    #
-    #     raise ValueError('Image format not JPEG')
+    encoded_jpg_io = io.BytesIO(encoded_jpg)
+    image = PIL.Image.open(encoded_jpg_io)
+    if image.format != 'JPEG':
+        raise ValueError('Image format not JPEG')
+
     key = hashlib.sha256(encoded_jpg).hexdigest()
 
     # Open image and find its size
@@ -172,21 +202,21 @@ def dict_to_tf_example(data,
 
 def create_tf_record(output_filename,
                      label_map_dict,
-                     examples):
+                     examples, image_coder):
     """Creates a TFRecord file from examples.
     Args:
       output_filename: Path to where output file is saved.
       label_map_dict: The label map dictionary.
       examples: Examples to parse and save to tf record.
+      image_coder: Utility to convert PNG image to JPEG
     """
     writer = tf.python_io.TFRecordWriter(output_filename)
-    print output_filename
     for idx, example in enumerate(examples):
         if idx % 100 == 0:
             logging.info('On image %d of %d', idx, len(examples))
             print 'On image %d of %d', idx, len(examples)
         data = example
-        tf_example = dict_to_tf_example(data, label_map_dict)
+        tf_example = dict_to_tf_example(data, label_map_dict,image_coder)
         writer.write(tf_example.SerializeToString())
 
     writer.close()
@@ -200,8 +230,7 @@ def main(_):
     logging.info('Reading from LISA Extension dataset.')
 
     examples = parse_lisa_annotations_to_dict(data_dir)
-    # Convert dict to list
-    examples_list = [i[1] for i in examples.items()]
+    examples_list = [i[1] for i in examples.items()]    # Convert dict to list
 
     # Test images are not included in the downloaded data set, so we shall perform
     # our own split.
@@ -219,9 +248,14 @@ def main(_):
     train_output_path = os.path.join(FLAGS.output_dir, 'lisa_train.record')
     val_output_path = os.path.join(FLAGS.output_dir, 'lisa_val.record')
 
-    create_tf_record(train_output_path, label_map_dict, train_examples)
-    create_tf_record(val_output_path, label_map_dict, val_examples)
+    # Create a session to encode/decode PNG -> JPEG images
+    sess = tf.Session()
+    image_coder = ImageCoder(sess)
 
+    create_tf_record(train_output_path, label_map_dict, train_examples, image_coder)
+    create_tf_record(val_output_path, label_map_dict, val_examples, image_coder)
+
+    sess.close()
 
 if __name__ == '__main__':
     tf.app.run()
