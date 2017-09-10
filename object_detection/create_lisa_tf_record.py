@@ -141,13 +141,14 @@ def dict_to_tf_example(data,
     img_path = os.path.join(FLAGS.data_dir, data['filename'])
     with tf.gfile.GFile(img_path, 'rb') as fid:
         encoded_png = fid.read()
+
+        # Decode image from PNG to JPEG format
         encoded_jpg = image_coder.png_to_jpeg(encoded_png)
 
     encoded_jpg_io = io.BytesIO(encoded_jpg)
     image = PIL.Image.open(encoded_jpg_io)
     if image.format != 'JPEG':
         raise ValueError('Image format not JPEG')
-
     key = hashlib.sha256(encoded_jpg).hexdigest()
 
     # Open image and find its size
